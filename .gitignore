@@ -1,0 +1,5 @@
+# Everything here is machine state except the files tracked in this repo.
+*
+!.gitignore
+!CLAUDE.md
+!settings.json
