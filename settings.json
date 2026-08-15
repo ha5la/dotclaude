@@ -1,0 +1,40 @@
+{
+  "model": "opus",
+  "enabledPlugins": {
+    "mattpocock-skills@claude-plugins-official": true
+  },
+  "effortLevel": "high",
+  "theme": "dark-ansi",
+  "preferredNotifChannel": "terminal_bell",
+  "agentPushNotifEnabled": true,
+  "bellOnApproval": true,
+  "disableArtifact": true,
+  "autoMemoryEnabled": false,
+  "permissions": {
+    "deny": [
+      "Agent",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "DesignSync",
+      "EndConversation",
+      "EnterPlanMode",
+      "EnterWorktree",
+      "ExitPlanMode",
+      "ExitWorktree",
+      "ListAgents",
+      "NotebookEdit",
+      "RemoteTrigger",
+      "ScheduleWakeup",
+      "SendMessage",
+      "TaskOutput"
+    ]
+  },
+  "disableBundledSkills": true,
+  "disableWorkflows": true,
+  "disableClaudeAiConnectors": true,
+  "statusLine": {
+    "type": "command",
+    "command": "jq -r '\"[\\(.model.display_name)] \\(.context_window.used_percentage // 0)% context\"'"
+  }
+}
