@@ -1,133 +1,109 @@
-## 1. Think Before Coding
+## Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
+- State your assumptions explicitly and proceed on them. Ask only when the
+  readings lead to materially different work and guessing wrong is expensive.
+- If multiple interpretations exist, name them — don't pick silently.
 - If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
 
-## 2. Simplicity First
+## Reporting Style
+
+When reporting to me, be extremely concise and sacrifice grammar for concision.
+
+## Simplicity First
 
 **Minimum code that solves the problem. Nothing speculative.**
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
+- Build what was asked: no extra features, no abstractions for single-use code,
+  no unrequested flexibility, no error handling for impossible scenarios.
+- Prefer decremental development — removing code that isn't needed beats keeping
+  it "just in case". Dead code is technical debt.
 - If you write 200 lines and it could be 50, rewrite it.
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-## 3. Surgical Changes
+## Surgical Changes
 
-**Touch only what you must. Clean up only your own mess.**
+**Every changed line traces directly to my request.**
 
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
+- Leave adjacent code, comments and formatting exactly as they are, even where
+  the style differs from yours. Match the surrounding style in what you add.
+- Remove imports/variables/functions that YOUR changes orphaned.
+- Pre-existing dead code: mention it, leave it.
 
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+## Comments
 
-The test: Every changed line should trace directly to the user's request.
+Before writing a comment, ask what it would cost to omit it entirely — usually
+nothing. Then ask whether a clearer identifier can carry it instead. What
+survives both gets a sentence, not an essay. Three kinds are worth zero:
+**history** ("this used to be X" — git keeps it), **restating the standard**,
+and **justifying a duplication or workaround** — that last one is a load-bearing
+excuse, it goes stale silently because nothing tests a justification, and it
+ends up arguing against a fix that has become free.
 
-## 4. Goal-Driven Execution
+## Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
+
+Requirements are best expressed as tests: executable, unambiguous, and unable to
+go stale silently. Markdown is second best. Prose-only requirements are a last
+resort for what genuinely cannot be tested (visual UX, hardware interactions).
 
 Transform tasks into verifiable goals:
 - "Add validation" → "Write tests for invalid inputs, then make them pass"
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
 
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
+For multi-step tasks, state a brief plan of `[step] → verify: [check]` lines.
+Strong criteria let you loop independently; "make it work" doesn't.
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+## TDD
 
-## 5. Simplicity
+Kent Beck's cycle, one test at a time: **Red → Green → Refactor**.
 
-When reporting information to me, be extremely concise and sacrifice grammar for the sake of concision.
+- Write the simplest failing test for the next small increment, named for the
+  behaviour (`shouldSumTwoPositiveNumbers`).
+- **Red before green** — watch it fail against the unfixed code. A test that
+  looks right but was never seen red is unverified, and one written after the
+  fix exists gets its assertion shaped by whatever the fix happens to produce.
+  If the fix landed first, revert it (or monkeypatch the buggy function back),
+  confirm red, restore, confirm green.
+- Write just enough code to pass — no more.
+- Refactor only on green, one named refactoring at a time, prioritising
+  duplication removal and clarity.
+- Run the whole suite (minus long-running tests) after each step.
+- For a defect: an API-level failing test first, then the smallest test that
+  replicates it, then make both pass.
 
-## 6. Role And Expertise
+## Test Discipline
 
-You are a senior software engineer who follows Kent Beck's Test-Driven Development (TDD) and Tidy First principles. Your purpose is to guide development following these methodologies precisely.
+- **Time is an input — pin it.** `datetime.now()` in a test undermines
+  reproducibility. Production code that needs the clock takes an optional `now`
+  parameter defaulting to the real one, so tests inject a fixed value.
+- **Wait for the real condition, not a guessed duration.** `sleep(0.1); assert X`
+  is slow on every run and flaky on a loaded machine. Poll the actual predicate,
+  with a generous timeout as a safety net for genuine failure, not as the
+  expected wait. Stronger still where the output has a deterministic terminator:
+  wait on that and guess nothing. Only negative assertions ("nothing arrives")
+  need a real bounded sleep.
+- **Verify against reality, not just against assertions.** Whole classes of bug
+  are structurally invisible to unit tests — how output branches *combine*, how
+  a rendered frame actually looks, how real hardware reacts. Decode the artifact,
+  capture the packets, measure against the real thing. A green suite is not the
+  same as a correct one.
 
-## 7. Core Development Principles
+## Tidy First and Commit Discipline
 
-- Always follow the TDD cycle: Red → Green → Refactor
-- Write the simplest failing test first
-- Implement the minimum code needed to make tests pass
-- Refactor only after tests are passing
-- Follow Beck's "Tidy First" approach by separating structural changes from behavioral changes
-- Maintain high code quality throughout development
+Separate **structural** changes (renaming, extracting, moving — behaviour
+identical) from **behavioural** ones. Never mix them in a commit; do the
+structural ones first, with tests run before and after to prove they changed
+nothing.
 
-## 8. TDD Methodology Guidance
+Commit when all tests pass, all warnings are resolved, and the change is one
+logical unit. Say in the message which of the two kinds it is. Small and
+frequent beats large and rare.
 
-- Start by writing a failing test that defines a small increment of functionality
-- Use meaningful test names that describe behavior (e.g., "shouldSumTwoPositiveNumbers")
-- Make test failures clear and informative
-- Write just enough code to make the test pass - no more
-- Once tests pass, consider if refactoring is needed
-- Repeat the cycle for new functionality
-- When fixing a defect, first write an API-level failing test then write the smallest possible test that replicates the problem then get both tests to pass.
-
-## 9. Tidy First Approach
-
-- Separate all changes into two distinct types:
-  1. STRUCTURAL CHANGES: Rearranging code without changing behavior (renaming, extracting methods, moving code)
-  2. BEHAVIORAL CHANGES: Adding or modifying actual functionality
-- Never mix structural and behavioral changes in the same commit
-- Always make structural changes first when both are needed
-- Validate structural changes do not alter behavior by running tests before and after
-
-## 10. Commit Discipline
-
-- Only commit when:
-  1. ALL tests are passing
-  2. ALL compiler/linter warnings have been resolved
-  3. The change represents a single logical unit of work
-  4. Commit messages clearly state whether the commit contains structural or behavioral changes
-- Use small, frequent commits rather than large, infrequent ones
-
-## 11. Code Quality Standards
-
-- Eliminate duplication ruthlessly
-- Express intent clearly through naming and structure
-- Make dependencies explicit
-- Keep methods small and focused on a single responsibility
-- Minimize state and side effects
-- Use the simplest solution that could possibly work
-
-## 12. Refactoring Guidelines
-
-- Refactor only when tests are passing (in the "Green" phase)
-- Use established refactoring patterns with their proper names
-- Make one refactoring change at a time
-- Run tests after each refactoring step
-- Prioritize refactorings that remove duplication or improve clarity
-
-## 13. Example Workflow
-
-When approaching a new feature:
-
-1. Write a simple failing test for a small part of the feature
-2. Implement the bare minimum to make it pass
-3. Run tests to confirm they pass (Green)
-4. Make any necessary structural changes (Tidy First), running tests after each change
-5. Commit structural changes separately
-6. Add another test for the next small increment of functionality
-7. Repeat until the feature is complete, committing behavioral changes separately from structural ones
-
-Follow this process precisely, always prioritizing clean, well-tested code over quick implementation.
-
-Always write one test at a time, make it run, then improve structure. Always run all the tests (except long-running tests) each time.
+Commit each finished topic before starting the next. Unrelated changes piling up
+in one working tree make a clean split expensive later — reconstructing each
+slice by hand, with no intermediate history left to split from.
